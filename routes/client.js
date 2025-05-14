@@ -17,7 +17,29 @@ router.post('/', (req, res) => {
         res.status(201).json({ id: result.insertId, ...req.body });
     });
 });
+// Deletar cliente por ID
+router.delete('/:id', (req, res) => {
+    const id = req.params.id;
+    const deletePhotosSql = "DELETE FROM client_photos WHERE ClientId = ?";
+    const sql = "DELETE FROM client WHERE Id = ?";
+    db.query(deletePhotosSql, [id], (err) => {
+        if (err) {
+            console.error("Erro ao deletar fotos do cliente:", err);
+            return res.status(500).json({ error: "Erro ao deletar fotos do cliente" });
+        }
 
+        db.query(sql, [id], (err, result) => {
+            if (err) {
+                console.error("Erro ao deletar cliente:", err);
+                return res.status(500).json({ error: "Erro ao deletar cliente" });
+            }
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: "Cliente não encontrado" });
+            }
+            res.status(200).json({ message: "Cliente e fotos deletados com sucesso" });
+        });
+    });
+});
 // Listar todos os clientes
 router.get('/', (req, res) => {
     db.query("SELECT * FROM client", (err, results) => {
